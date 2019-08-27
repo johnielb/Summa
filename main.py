@@ -114,17 +114,16 @@ class numberButton():
 class totalButton():
     ''' Class for unclickable buttons at the end of the board's rows/columns
     that store the solution to the row/column '''
-    def __init__(self, order, num, pos, x, y, trues):
+    def __init__(self, order, num, pos, x, y):
         # How far down object is on grid
         self.order = order
         # Number to display
         self.num = num
         # Pos [0] = place on right; [1] = place on bottom
-        if pos == 0:
-            self.isRow = True
-            self.isCol = False
-        elif pos == 1:
-            self.isCol = True
+        self.isRow = True
+        # Current sum on board
+        self.sum = 0
+        if pos == 1:
             self.isRow = False
         # Top left coords
         self.x1 = x
@@ -132,14 +131,17 @@ class totalButton():
         # Bottom right coords
         self.x2 = x + 50
         self.y2 = y + 50
-        # Get which buttons on the row/column should be on
-        self.trues = trues
+        # Initiate new array for selected buttons
+        self.selected = [];
+        for i in range(len(arrGrid)):
+            self.selected.append(0)
         self.isCorrect = False
         
         # Draw button
         self.circ = canvas.create_oval(self.x1, self.y1, self.x2, self.y2, width=3)
+        self.reset()
         text = canvas.create_text(self.x1 + 25, self.y1 + 25, text=self.num, fill=fg, font=(body, 20))
-        self.check()
+        #self.check()
 
     # When solution is met, adjust variables and appearance to be active
     def correct(self):
@@ -154,17 +156,19 @@ class totalButton():
     # Called after number buttons have been clicked so that this obj
     # can understand what happened
     def click(self, pos, isHint = False):
-        if self.trues[pos] == 1:
-            self.trues[pos] = 0
-        elif self.trues[pos] == 0:
-            self.trues[pos] = 1
-        if isHint:
-            self.trues[pos] = 0
-        self.check()
-    
-    # Check answers
-    def check(self):
-        if set(self.trues) == {0}:
+        if self.isRow:
+            num = arrGrid[self.order][pos]
+        else:
+            num = arrGrid[pos][self.order]
+        # flip state of selected button and adjust total accordingly
+        if self.selected[pos] == 1:
+            self.selected[pos] = 0
+            self.sum -= num
+        else:
+            self.selected[pos] = 1
+            self.sum += num
+        # check if correct
+        if (self.sum == self.num):
             self.correct()
         else:
             self.reset()
@@ -663,13 +667,9 @@ def newScreen(s):
             xVal += incr
             yVal += incr
             # Make total button for nth row
-            rowButton = totalButton(total, arrTotals[total][0], 0, 380, yVal, arrTrues[total])
-            # Figure out total of column
-            colTotal = []
-            for i in range(size):
-                colTotal.append(arrTrues[i][total])
+            rowButton = totalButton(total, arrTotals[total][0], 0, 380, yVal)
             # Make total button for nth column
-            colButton = totalButton(total, arrTotals[total][1], 1, xVal, 480, colTotal)
+            colButton = totalButton(total, arrTotals[total][1], 1, xVal, 480)
             # Append to arrays, dimensions: [n][0 - row / 1 - col]
             totalButtons.append([rowButton, colButton])
         # Get time user began playing
