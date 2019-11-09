@@ -13,10 +13,12 @@ import random, time, colorsys, json
 from tkinter import *
 from collections import OrderedDict
 
+
 class menuButton():
-    ''' Class for buttons that belong in menu, has variables for drawing coordinates,
-    limit coordinates, image, text and leading screen'''
-    def __init__(self, x, y, text, image, scr = 0):
+    """ Class for buttons that belong in menu, has variables for drawing coordinates,
+    limit coordinates, image, text and leading screen"""
+
+    def __init__(self, x, y, text, image, scr=0):
         # Top left coords
         self.x1 = x
         self.y1 = y
@@ -40,21 +42,23 @@ class menuButton():
         self.text = text
         # Which screen button leads to
         self.scr = scr
-        
+
         # Draw button
         rect = canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2,
                                        outline=fg, width=2)
-        text = canvas.create_text(self.x1+165, self.y1+55, text=text, anchor=W,
+        text = canvas.create_text(self.x1 + 165, self.y1 + 55, text=text, anchor=W,
                                   fill=fg, font=(body, 54))
-        img = canvas.create_image(self.x1+60, self.y1+60, image=self.image)
+        img = canvas.create_image(self.x1 + 60, self.y1 + 60, image=self.image)
 
     def click(self):
         if scr > 0:
             newScreen(self.scr)
 
+
 class numberButton():
-    ''' Class for buttons that make up the game board, has variables necessary
-    for drawing button and storing its current state on the board '''
+    """ Class for buttons that make up the game board, has variables necessary
+    for drawing button and storing its current state on the board """
+
     def __init__(self, x, y, row, col, num, tru, sol):
         # Top left coords
         self.x1 = x
@@ -86,12 +90,12 @@ class numberButton():
     # Called when gameClick determines an object has been clicked
     def click(self):
         # If not locked
-        if self.hinted == False:
+        if not self.hinted:
             # Swap False <-> True and adjust border likewise
-            if self.on == False:
+            if not self.on:
                 canvas.itemconfig(self.circ, width=2)
                 self.on = True
-            elif self.on == True:
+            elif self.on:
                 canvas.itemconfig(self.circ, width=1)
                 self.on = False
             # Update total buttons
@@ -111,9 +115,11 @@ class numberButton():
         totalButtons[self.row][0].click(self.col, True)
         totalButtons[self.col][1].click(self.row)
 
+
 class totalButton():
-    ''' Class for unclickable buttons at the end of the board's rows/columns
-    that store the solution to the row/column '''
+    """ Class for unclickable buttons at the end of the board's rows/columns
+    that store the solution to the row/column """
+
     def __init__(self, order, num, pos, x, y):
         # How far down object is on grid
         self.order = order
@@ -136,12 +142,14 @@ class totalButton():
         for i in range(len(arrGrid)):
             self.selected.append(0)
         self.isCorrect = False
-        
+        if self.num == 0:
+            self.correct()
+
         # Draw button
         self.circ = canvas.create_oval(self.x1, self.y1, self.x2, self.y2, width=3)
         self.reset()
         text = canvas.create_text(self.x1 + 25, self.y1 + 25, text=self.num, fill=fg, font=(body, 20))
-        #self.check()
+
 
     # When solution is met, adjust variables and appearance to be active
     def correct(self):
@@ -155,7 +163,7 @@ class totalButton():
 
     # Called after number buttons have been clicked so that this obj
     # can understand what happened
-    def click(self, pos, isHint = False):
+    def click(self, pos):
         if self.isRow:
             num = arrGrid[self.order][pos]
         else:
@@ -168,22 +176,24 @@ class totalButton():
             self.selected[pos] = 1
             self.sum += num
         # check if correct
-        if (self.sum == self.num):
+        if self.sum == self.num:
             self.correct()
         else:
             self.reset()
 
+
 def hslToRgb(hue):
-    ''' Converts HSV value to RGB so Tkinter can read it '''
+    """ Converts HSV value to RGB so Tkinter can read it """
     h = (hue % 360) / 360
-    r,g,b = colorsys.hsv_to_rgb(h, 0.45, 0.45)
+    r, g, b = colorsys.hsv_to_rgb(h, 0.45, 0.45)
     r = int(round(r * 255, 0))
     g = int(round(g * 255, 0))
     b = int(round(b * 255, 0))
-    return "#%02x%02x%02x" % (r,g,b)
-                              
+    return "#%02x%02x%02x" % (r, g, b)
+
+
 def changer(hue):
-    ''' Changes background colour by incrementing hue '''
+    """ Changes background colour by incrementing hue """
     bg = hslToRgb(hue)
     hue += 2
     canvas.config(background=bg)
@@ -193,20 +203,20 @@ def changer(hue):
     exitButton.config(bg=bg, activebackground=bg)
     root.after(20, changer, hue)
 
+
 def nameLimit(*args):
-    ''' Function loops to ensure that input doesn't go over char limit '''
+    """ Function loops to ensure that input doesn't go over char limit """
     val = tempName.get()[0:10]
     tempName.set(val)
 
+
 def changeName(*args):
-    ''' Function error checks name (alphabetic, 15 or less) and stores
-    if input is valid '''
+    """ Function error checks name (alphabetic, 15 or less) and stores
+    if input is valid """
     global name
     check = tempName.get()
     if len(check) < 1 or (' ' in check) == True:
         error = "Please enter your first name."
-    elif len(check) < 2:
-        error = "Please enter a longer name."
     elif check.isalpha():
         name = check.lower()
         # Removes entry
@@ -220,8 +230,9 @@ def changeName(*args):
     # Clears entry
     widgets[0].delete(0, 'end')
 
+
 def setDiff(choice):
-    ''' Function sets constants based on the user's choice in difficulty '''
+    """ Function sets constants based on the user's choice in difficulty """
     # Easy
     if choice == 1:
         size = 4
@@ -236,8 +247,9 @@ def setDiff(choice):
         limit = 10
     return size, limit
 
+
 def newBoard(size, limit):
-    ''' Function that creates new board for new game based on difficulty set '''
+    """ Function that creates new board for new game based on difficulty set """
     # Create number board with random numbers
     grid = []
     for i in range(size):
@@ -250,12 +262,13 @@ def newBoard(size, limit):
     for i in range(size):
         row = []
         for j in range(size):
-            row.append(random.randint(0,1))
+            row.append(random.randint(0, 1))
         trues.append(row)
     return grid, trues
 
+
 def getHint():
-    ''' Get random button and reveal solution '''
+    """ Get random button and reveal solution """
     global hint, hintCount
     hintCount += 1
     size = len(arrTrues)
@@ -286,15 +299,15 @@ def getHint():
         else:
             break
 
+
 def menuClick(event):
-    ''' Function called when the user clicks in a menu screen '''
+    """ Function called when the user clicks in a menu screen """
     # Tells program which widget was last clicked    
     global clicked
     # Checks if the next button was clicked, separated from rest of code
     # as the for loop didn't like the Entry widget
     if scr == 1:
-        if (event.x >= 300 and event.x <= 400 and
-            event.y >= 480 and event.y <= 520):
+        if 300 <= event.x <= 400 and 480 <= event.y <= 520:
             changeName()
     else:
         # Checks if the widget in loop has been clicked
@@ -302,8 +315,8 @@ def menuClick(event):
             try:
                 # Check that the widget is a menu button,
                 # there are widgets, and that the click is within the limit
-                if (len(widgets) > 0 and event.x >= widgets[i].x1 and event.x <= widgets[i].xlim
-                and event.y >= widgets[i].y1 and event.y <= widgets[i].ylim):
+                if (len(widgets) > 0 and widgets[i].x1 <= event.x <= widgets[i].xlim
+                        and widgets[i].y1 <= event.y <= widgets[i].ylim):
                     clicked = widgets[i]
                     clicked.click()
             # Catch error in case the for loop hasn't updated its step range
@@ -313,36 +326,34 @@ def menuClick(event):
         # In main menu...
         if scr == 2:
             # Back to name screen
-            if (event.x >= 100 and event.x <= 380
-                and event.y >= 620 and event.y <= 680):
+            if 100 <= event.x <= 380 and 620 <= event.y <= 680:
                 newScreen(1)
         # In difficulty screen or high scores...
         if scr == 3 or scr == 8:
             # Back to main menu
-            if (event.x >= 100 and event.x <= 380
-                and event.y >= 620 and event.y <= 680):
+            if 100 <= event.x <= 380 and 620 <= event.y <= 680:
                 newScreen(2)
 
+
 def gameClick(event):
-    ''' Function called when user clicks screen in game '''
+    """ Function called when user clicks screen in game """
     # Tells program which widget was last clicked    
     global clicked
     # Checks if the widget in loop has been clicked
     for r in range(len(widgets)):
         for c in range(len(widgets)):
             w = widgets[r][c]
-            if (event.x >= w.x1 and event.x <= w.xlim
-            and event.y >= w.y1 and event.y <= w.ylim):
+            if w.x1 <= event.x <= w.xlim and w.y1 <= event.y <= w.ylim:
                 clicked = w
                 clicked.click()
     # Checks if hint button has been clicked
-    if (event.x >= 100 and event.x <= 380
-        and event.y >= 570 and event.y <= 630):
+    if 100 <= event.x <= 380 and 570 <= event.y <= 630:
         getHint()
 
+
 def loopCorrect(array):
-    ''' Loops to click random buttons on tutorial screen
-    Loops to check if answer is found in game '''
+    """ Loops to click random buttons on tutorial screen
+    Loops to check if answer is found in game """
     if scr == 4:
         # Get random button and click it to demonstrate
         row = random.randint(0, 1)
@@ -361,6 +372,7 @@ def loopCorrect(array):
         else:
             root.after(50, loopCorrect, array)
 
+
 def scoring(time):
     # Size of grid = difficulty
     size = len(arrGrid)
@@ -378,7 +390,7 @@ def scoring(time):
     elif size == 5:
         add = 400
         base = 300
-        con = 4/3
+        con = 4 / 3
         div = 60
     # Hard
     elif size == 6:
@@ -395,8 +407,9 @@ def scoring(time):
     checkHighScores(score)
     return str(score).strip(".0")
 
+
 def checkHighScores(score):
-    ''' Check if the user's score belongs in the top 10 '''
+    """ Check if the user's score belongs in the top 10 """
     # Get high scores sorted in dict
     highScores = getHighScores()
     # Get lowest score in top 10
@@ -424,8 +437,9 @@ def checkHighScores(score):
     except EnvironmentError:
         return
 
+
 def getHighScores():
-    ''' Load json in folder and return it as a dict file '''
+    """ Load json in folder and return it as a dict file """
     try:
         with open('data/hs.json') as hsFile:
             # Load JSON as dict and sort by highest score (desc)
@@ -436,8 +450,9 @@ def getHighScores():
     except EnvironmentError:
         return []
 
+
 def newScreen(s):
-    ''' Function to call when screen needs to be erased and replaced
+    """ Function to call when screen needs to be erased and replaced
     [0] Splash screen
     [1] Name screen
     [2] Main menu
@@ -446,19 +461,19 @@ def newScreen(s):
     [5] Loading
     [6] Game board
     [7] Finished
-    [8] High scores '''
+    [8] High scores """
     # Clear canvas and widgets
     canvas.delete(ALL)
-    del widgets [:]
+    del widgets[:]
     # Allows other functions to know what screen is currently shown
     global scr
     scr = s
     if scr == 0:
         # Title text
         header = canvas.create_text(240, 315, text="summa", fill=fg,
-                                           font=(heading, 90))
+                                    font=(heading, 90))
         sub = canvas.create_text(240, 400, text="by flow computing",
-                                       fill=fg, font=(body, 37))
+                                 fill=fg, font=(body, 37))
         # Waits 1 second before displaying next screen
         root.after(1000, newScreen, 1)
     elif scr == 1:
@@ -467,21 +482,21 @@ def newScreen(s):
         global tempName, errorTxt
         tempName = StringVar()
         # Title text
-        header = canvas.create_text(240,100, text="hello!", fill=fg,
-                                           font=(heading, 48))
+        header = canvas.create_text(240, 100, text="hello!", fill=fg,
+                                    font=(heading, 48))
         sub = canvas.create_text(240, 200, text="and you are?",
-                                       fill=fg, font=(body, 28))
+                                 fill=fg, font=(body, 28))
         # Sets and places entry, stores in array
         entry = Entry(root, textvariable=tempName, bg=bg,
                       fg=fg, borderwidth=0, font=(body, 20))
         entry.place(x=80, y=350, width=320, height=50)
         entry.bind("<Return>", changeName)
-        widgets.append(entry) # [0]
+        widgets.append(entry)  # [0]
         tempName.trace("w", nameLimit)
         entryBorder = canvas.create_line(80, 400, 400, 400, fill=fg)
         # Sets and places button
         back = canvas.create_text(350, 500, text="next >", fill=fg,
-                                      font=(body, 27))
+                                  font=(body, 27))
         # Sets and places error
         errorTxt = canvas.create_text(80, 420, anchor=NW, fill="#ffaaaa", text="", font=(body, 20))
         # Binds left button click to menuClick event handler
@@ -491,9 +506,9 @@ def newScreen(s):
         # Initialise so that there is only 1 global declaration
         arrGrid, arrTrues, totalButtons = [], [], []
         # Title text
-        header = canvas.create_text(240,60, text="summa", fill=fg,
-                                           font=(heading, 48))
-        sub = canvas.create_text(240, 110, text="welcome "+name+"!", fill=fg,
+        header = canvas.create_text(240, 60, text="summa", fill=fg,
+                                    font=(heading, 48))
+        sub = canvas.create_text(240, 110, text="welcome " + name + "!", fill=fg,
                                  font=(body, 24))
         # Menu button to difficulty
         play = menuButton(50, 160, "play", "play.gif", 3)
@@ -509,12 +524,12 @@ def newScreen(s):
         widgets.append(score)
         # Button to change name 
         back = canvas.create_text(240, 650, text="< change name", fill=fg,
-                                      font=(body, 27))
+                                  font=(body, 27))
     elif scr == 3:
         # Unbinds button enabled for name entry
         canvas.unbind("<Return>")
-        header = canvas.create_text(240,80, text="how difficult?", fill=fg,
-                                           font=(heading, 44))
+        header = canvas.create_text(240, 80, text="how difficult?", fill=fg,
+                                    font=(heading, 44))
         # Menu button for easy 
         easy = menuButton(50, 160, "easy", "easy.gif", 5)
         # Store in array[0]
@@ -529,18 +544,20 @@ def newScreen(s):
         widgets.append(hard)
         # Button to main menu
         back = canvas.create_text(240, 650, text="< back", fill=fg,
-                                      font=(body, 27))
+                                  font=(body, 27))
     elif scr == 4:
-        header = canvas.create_text(240,80, text="how to play", fill=fg,
-                                           font=(heading, 44))
+        header = canvas.create_text(240, 80, text="how to play", fill=fg,
+                                    font=(heading, 44))
         # Menu button to difficulty
-        sub = canvas.create_text(240, 175, text="Light up numbers on the grid\nso that they add up to the numbers\nnext to that row or column",
+        sub = canvas.create_text(240, 175,
+                                 text='Light up numbers on the grid\nso that they add up to the numbers\nnext to that '
+                                      'row or column',
                                  fill=fg, justify=CENTER, font=(body, 18))
         # Preset the arrays
-        arrGrid = [[3,1,2],[2,4,3],[3,2,1]]
-        arrTrues = [[1,1,0],[1,0,1],[0,1,1]]
-        arrSols = [[3,1,0],[2,0,3],[0,2,1]]
-        arrTotals = [[4,5],[5,3],[3,4]]
+        arrGrid = [[3, 1, 2], [2, 4, 3], [3, 2, 1]]
+        arrTrues = [[1, 1, 0], [1, 0, 1], [0, 1, 1]]
+        arrSols = [[3, 1, 0], [2, 0, 3], [0, 2, 1]]
+        arrTotals = [[4, 5], [5, 3], [3, 4]]
         # Adjust margins for a 3x3 grid
         incr = 70
         yVal = 250 - incr
@@ -589,8 +606,8 @@ def newScreen(s):
         # Rebind left button click to gameClick event handler
         canvas.bind("<Button-1>", gameClick)
         # Sets text
-        header = canvas.create_text(240,360, text="let's play", fill=fg,
-                                           font=(heading, 44))
+        header = canvas.create_text(240, 360, text="let's play", fill=fg,
+                                    font=(heading, 44))
         # Sets the grid size and limit based on what the user clicked
         if clicked.text == "easy":
             s, l = setDiff(1)
@@ -607,11 +624,11 @@ def newScreen(s):
         root.after(1000, newScreen, 6)
     elif scr == 6:
         global hint, startTime
-        header = canvas.create_text(240,80, text="summa", fill=fg,
-                                           font=(heading, 48))
+        header = canvas.create_text(240, 80, text="summa", fill=fg,
+                                    font=(heading, 48))
         # Hint button
         hint = canvas.create_text(240, 600, text="stuck?", fill=fg,
-                                      font=(body, 27))
+                                  font=(body, 27))
         # Stores numbers that are part of solution
         arrSols = []
         # Proxy for difficulty
@@ -685,10 +702,10 @@ def newScreen(s):
         score = str(scoring(totalTime))
         # Add score to congratulating text
         scoreString = "You scored " + score + " points!"
-        header = canvas.create_text(240,350, text=congratsString, fill=fg,
-                                           font=(heading, 42))
+        header = canvas.create_text(240, 350, text=congratsString, fill=fg,
+                                    font=(heading, 42))
         sub = canvas.create_text(240, 410, text=scoreString,
-                                       fill=fg, font=(body, 30))
+                                 fill=fg, font=(body, 30))
         # Rebind menu click event handler
         canvas.bind("<Button-1>", menuClick)
         # Back to menu
@@ -719,7 +736,8 @@ def newScreen(s):
             canvas.create_text(240, 360, text="High scores missing :(",
                                fill=fg, font=(body, 32))
         back = canvas.create_text(240, 650, text="< back", fill=fg,
-                                      font=(body, 27))
+                                  font=(body, 27))
+
 
 def init():
     # Initialise GUI
@@ -727,7 +745,7 @@ def init():
     # Set thematic constants
     global bg, fg, body, heading
     fg = "#ffffff"
-    bg = "#%02x%02x%02x" % (41,46,74)
+    bg = "#%02x%02x%02x" % (41, 46, 74)
     body = "Franklin Gothic Book"
     heading = "Franklin Gothic Demi"
     # Array for all widgets in view, popped when not in view
@@ -749,5 +767,6 @@ def init():
     # Start colour changer
     changer(0)
     root.mainloop()
+
 
 init()
