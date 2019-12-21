@@ -142,12 +142,13 @@ class totalButton():
         for i in range(len(arrGrid)):
             self.selected.append(0)
         self.isCorrect = False
-        if self.num == 0:
-            self.correct()
 
         # Draw button
         self.circ = canvas.create_oval(self.x1, self.y1, self.x2, self.y2, width=3)
-        self.reset()
+        if self.num == 0:
+            self.correct()
+        else:
+            self.reset()
         text = canvas.create_text(self.x1 + 25, self.y1 + 25, text=self.num, fill=fg, font=(body, 20))
 
 
@@ -584,13 +585,13 @@ def newScreen(s):
             xVal += incr
             yVal += incr
             # Make total button for nth row
-            rowButton = totalButton(total, arrTotals[total][0], 0, 320, yVal, arrTrues[total])
+            rowButton = totalButton(total, arrTotals[total][0], 0, 320, yVal)
             # Figure out total of column
             colTotal = []
             for i in range(3):
                 colTotal.append(arrTrues[i][total])
             # Make total button for nth column
-            colButton = totalButton(total, arrTotals[total][1], 1, xVal, 460, colTotal)
+            colButton = totalButton(total, arrTotals[total][1], 1, xVal, 460)
             # Append to arrays, dimensions: [n][0 - row / 1 - col]
             totalButtons.append([rowButton, colButton])
         play = menuButton(80, 550, "play", "play.gif", 3)
